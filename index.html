@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galería de Videos</title>
+  <!-- TailwindCSS desde CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Force a fixed test size for video players (overrides other CSS) */
+      .fixed-size-video {
+      width: 560px !important;
+      height: 420px !important;
+      max-width: 100% !important;
+      /* allow the video to shrink on very small screens but prefer fixed size */
+      min-width: 0 !important;
+      flex-shrink: 0 !important;
+        display: block;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        background: #000;
+        object-fit: contain;
+      }
+      /* Make the card wrap the video size and remain responsive */
+      .video-card {
+        display: inline-block;
+        vertical-align: top;
+        text-align: center;
+        width: auto;
+        max-width: 100%;
+        box-sizing: border-box;
+        /* increase horizontal padding to make the frame wider without touching video */
+        padding: 1rem 2rem; /* top/bottom 1rem, left/right 2rem */
+        border-radius: 12px; /* rounded card */
+        overflow: hidden; /* ensure video stays inside the rounded card */
+        min-width: 620px; /* ensure card is a bit wider than the video (560px) */
+      }
+      /* Grid that ensures columns are at least as wide as the video (400px) */
+      .video-grid {
+        display: grid !important;
+        /* ensure columns are at least as wide as the card (video + horizontal padding) */
+        grid-template-columns: repeat(auto-fit, minmax(620px, max-content));
+        gap: 1.5rem;
+        align-items: start;
+        justify-content: start;
+      }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center min-h-screen p-6">
+  <h1 class="text-3xl font-bold mb-6">🎬 Galería de Videos</h1>
+
+<div style="text-align:center; margin-bottom:20px;">
+  <a href="upload.html"
+     style="background:#3b82f6; color:white; padding:10px 20px; border-radius:8px; text-decoration:none;">
+     📤 Subir nuevo video
+  </a>
+</div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
+    <!-- Contenedor dinámico donde se insertarán los videos subidos -->
+    <div id="galeria" class="w-full"></div>
+  </div>
+<script>
+  async function cargarVideos() {
+    try {
+      const res = await fetch('/list-videos');
+      if (!res.ok) throw new Error('Error al listar videos');
+      const videos = await res.json();
+
+      const contenedor = document.getElementById('galeria');
+      contenedor.innerHTML = '';
+
+      if (!videos || videos.length === 0) {
+        contenedor.innerHTML = '<p class="text-center text-gray-400">No hay videos subidos aún.</p>';
+        return;
+      }
+
+  const grid = document.createElement('div');
+  grid.className = 'video-grid';
+
+      videos.forEach(nombre => {
+        const ext = (nombre.match(/\.([^.]+)$/) || [])[1] || '';
+        let type = '';
+        if (/mp4/i.test(ext)) type = 'video/mp4';
+        else if (/webm/i.test(ext)) type = 'video/webm';
+        else if (/ogg/i.test(ext) || /ogv/i.test(ext)) type = 'video/ogg';
+
+  const card = document.createElement('div');
+  // Use flex column and center so the video can keep its intrinsic size
+  card.className = 'bg-gray-800 p-4 rounded-xl shadow-lg text-center flex flex-col items-center video-card';
+
+      const video = document.createElement('video');
+  // Fixed test size requested: width 560px, height 420px
+  video.className = 'rounded-lg bg-black mx-auto fixed-size-video';
+  // apply the explicit pixel dimensions as inline fallback
+  video.style.width = '560px';
+  video.style.height = '420px';
+      // keep it responsive on small screens
+      video.style.maxWidth = '100%';
+      // Force important rules from JS to override any external stylesheet
+      try {
+  video.style.setProperty('width', '560px', 'important');
+  video.style.setProperty('height', '420px', 'important');
+  video.style.setProperty('min-width', '560px', 'important');
+        video.style.setProperty('max-width', '100%', 'important');
+        video.style.setProperty('flex-shrink', '0', 'important');
+      } catch (e) { /* silent fallback for older browsers */ }
+
+      // Ensure the card wraps the video's intrinsic size
+      try {
+        card.style.setProperty('width', 'fit-content', 'important');
+        card.style.setProperty('max-width', '100%', 'important');
+        card.style.setProperty('display', 'inline-flex', 'important');
+      } catch (e) {}
+  video.controls = true;
+  video.preload = 'metadata';
+  // Use contain to avoid cropping the video (letterboxing may appear)
+  video.style.objectFit = 'contain';
+
+        const source = document.createElement('source');
+        source.src = `/videos/${encodeURIComponent(nombre)}`;
+        if (type) source.type = type;
+
+        video.appendChild(source);
+        video.innerHTML += 'Tu navegador no soporta el video.';
+
+        const caption = document.createElement('p');
+        caption.className = 'mt-2';
+        caption.textContent = nombre;
+
+        card.appendChild(video);
+        card.appendChild(caption);
+        grid.appendChild(card);
+      });
+
+      contenedor.appendChild(grid);
+    } catch (err) {
+      const contenedor = document.getElementById('galeria');
+      contenedor.innerHTML = `<p class="text-red-500 text-center">${err.message}</p>`;
+      console.error(err);
+    }
+  }
+  cargarVideos();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Subir Video</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white p-8 text-center">
+  <h1 class="text-2xl font-bold mb-6">📤 Subir nuevo video</h1>
+
+  <form action="/upload" method="POST" enctype="multipart/form-data" class="space-y-4">
+    <input type="file" name="video" accept="video/*" required class="block mx-auto text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+    <button type="submit" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg">Subir Video</button>
+  </form>
+
+  <div class="mt-6">
+    <a href="/" class="text-blue-400 hover:underline">⬅ Volver a la galería</a>
+  </div>
+</body>
+</html>
